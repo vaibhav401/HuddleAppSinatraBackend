@@ -1,6 +1,6 @@
 root = "#{Dir.getwd}"
 
-activate_control_app "tcp://127.0.0.1:9001"
+activate_control_app "http://127.0.0.1:9001"
 bind "unix:///tmp/puma.pumatra.sock"
 pidfile "#{root}/tmp/pids/puma.pid"
 rackup "#{root}/config.ru"

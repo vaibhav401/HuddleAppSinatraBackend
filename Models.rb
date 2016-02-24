@@ -16,10 +16,11 @@ class User
 	property :email, String, :length => 5..255
 	property :username, String, :length => 5..255
 	property :full_name, String, :length => 6..255
-	property :password, BCryptHash
+	# property :password, BCryptHash
 	property :image_url, String 	# to get image_ associated with users gmail account
 		
 	property :gcm_token, String, :length => 5..255 # to store gcm token of client 
+	property :organization, String, :length => 5..255
 
 		#server only
 	property :created_at, DateTime   # handles by datamapper 
@@ -27,7 +28,7 @@ class User
 	
 	property :is_scrum_master, Boolean, :default => false
 	
-	
+	has 1, :session
 	has n, :tasks 					# for task related to this user
 	belongs_to :team , :required => false 				# to accociate a team with a user
 	
@@ -63,7 +64,9 @@ class User
 			:image_url => image_url,
 			:is_scrum_master => is_scrum_master,
 			:tasks  => tasks.map {|task| task.to_hash},
-			:gcm_token => gcm_token
+			:gcm_token => gcm_token,
+			:organization => organization,
+			:session => session.nil? == true ? "" : session.to_hash
 			
 		}
 	end
@@ -73,7 +76,7 @@ class User
 
 	def self.from_hash(hash)
 		user = User.new
-		user.password = hash["password"]
+		# user.password = hash["password"]
 		user.update_from_hash(hash)
 		user
 	end
@@ -84,6 +87,7 @@ class User
 		self.full_name = hash["full_name"]
 		self.image_url = hash["image_url"]
 		self.is_scrum_master = hash["is_scrum_master"]
+		self.organization = hash["organization"]
 		if not hash["reg_token"].nil?
 			self.reg_token =hash["reg_token"]
 		end
@@ -158,6 +162,7 @@ class Task
 	property :title, String , :length => 1..80
 	property :detail, String , :length => 0..255, :required => false
 	property :is_complete, Boolean, :default => false 
+	property :is_open, Boolean, :default => false 
 
 	property :discuss_task, Boolean, :default => false
 
@@ -203,6 +208,7 @@ class Task
 			:title => title,
 			:detail => detail,
 			:is_complete => is_complete,
+			:is_open => is_open,
 			:user_id => user.nil? == true ? -1 : user.id,
 			:team_id => team.id,
 			:created_at => created_at.strftime("%s").to_i,
@@ -228,7 +234,7 @@ class Task
 		self.title = hash["title"]
 		self.detail = hash["detail"]
 		self.is_complete =  hash["is_complete"] 
-		self.priority = hash["priority"]
+		self.is_open =  hash["is_open"] 
 		self.sync_code = hash["sync_code"]
 		self.complete_on = hash["complete_on"]
 		self.discuss_task = hash["discuss_task"]
@@ -242,13 +248,12 @@ class Session
 	property :id, Serial
 	property :server_token, String, :length => 1..255
 
-	belongs_to :user
+	belongs_to :user, :required => false
 
-	def to_json(*a){
-		:id => id,
+	def to_hash
+		{
 		:server_token => server_token,
-		:user => user
-		}.to_json(*a)
+		}
 	end
 end
 
