@@ -2,6 +2,7 @@ require 'sinatra'
 require "sinatra/json"
 require "json" # to parse json data 
 require 'pry'
+require 'google-id-token'
 
 load './Models.rb'
 
@@ -68,6 +69,8 @@ class HuddleApp < Sinatra::Base
 		# https://github.com/google/google-id-token checkout this gem
 		# provide organization to user 
 		verify_user_create_json!
+		auth_result = verify_google_auth_token( @request_payload["google_auth_token"])
+		# user auth result to verify details
 		user = User.first(:email => @request_payload["email"]) # check if user with that mail already exists 
 		if user.nil? 
 			logger.info "Creating new User"
@@ -208,6 +211,7 @@ class HuddleApp < Sinatra::Base
 		result = @request_payload["is_scrum_master"].nil?  ? false : result 
 		result = @request_payload["gcm_token"].nil?  ? false : result 
 		result = @request_payload["organization"].nil?  ? false : result 
+		result = @request_payload["google_auth_token"].nil?  ? false : result 
 		if result == false
 			halt 401, "Insufficient arguments"
 			logger.info "User provided Insufficient data for user creation"
@@ -241,6 +245,15 @@ class HuddleApp < Sinatra::Base
 		end
 	end
 
+	def verify_google_auth_token(google_auth_token)
+		validator = GoogleIDToken::Validator.new
+		jwt = validator.check(token, GOOGLE_AUTH_ID)
+		if jwt
+			jwt
+		else
+  			halt 404, "Illegal User !! go away"
+		end
+	end
 
 	def generate_server_token(username, full_name)
 		Digest::SHA256.hexdigest (username + full_name) # add salt here 

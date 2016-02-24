@@ -6,3 +6,4 @@ gem "sinatra-contrib"
 gem 'data_mapper'
 gem 'dm-mysql-adapter'
 gem 'json'
+gem 'google-id-token'
