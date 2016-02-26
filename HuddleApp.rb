@@ -1,18 +1,21 @@
 require 'sinatra'
 require "sinatra/json"
 require "json" # to parse json data 
-require 'pry'
+# require 'rest-client'
 require 'google-id-token'
-
+require 'pry-nav'
 load './Models.rb'
 
 class HuddleApp < Sinatra::Base
+	# add gcm updates 
+	# add something that i dont remeber now
 	configure { set :server, :puma } # set puma as default server 
 
 	configure :production, :development do
      enable :logging
    end
-
+   set :port, 9000
+   set :bind, '0.0.0.0'
 
     before '/*' do 
     	if ["POST", "PATCH"].index request.request_method 
@@ -26,6 +29,7 @@ class HuddleApp < Sinatra::Base
 		  	logger.info @request_payload
 		end
 	end
+
 	before '/team*' do 
 		token = env["HTTP_HTTP_X_AUTH_TOKEN"]
 		if token.nil?
@@ -37,7 +41,9 @@ class HuddleApp < Sinatra::Base
 		end
 		@user = session.user
 	end
+
 	before '/user*' do 
+		logger.info "inside before for /user*"
 		if request.request_method != "POST"
 			token = env["HTTP_HTTP_X_AUTH_TOKEN"]
 			if token.nil?
@@ -74,6 +80,7 @@ class HuddleApp < Sinatra::Base
 		user = User.first(:email => @request_payload["email"]) # check if user with that mail already exists 
 		if user.nil? 
 			logger.info "Creating new User"
+			#  instead update it from auth_result 
 			user = User.from_hash @request_payload
 			session = Session.new(:server_token => generate_server_token(user.username, user.email))
 			if not user.save
@@ -204,14 +211,16 @@ class HuddleApp < Sinatra::Base
 
 	def verify_user_create_json! 
 		result = true
-		result = @request_payload["username"].nil? ? false : result 
-		result = @request_payload["email"].nil?  ? false : result 
-		# result = @request_payload["password"].nil?  not required as user signs in from google
-		result = @request_payload["full_name"].nil?  ? false : result 
-		result = @request_payload["is_scrum_master"].nil?  ? false : result 
+		# will get username and email and password from auth token itself
+		# result = @request_payload["username"].nil? ? false : result 
+		# result = @request_payload["email"].nil?  ? false : result 
+		# # result = @request_payload["password"].nil?  not required as user signs in from google
+		# result = @request_payload["full_name"].nil?  ? false : result 
+		# result = @request_payload["is_scrum_master"].nil?  ? false : result 
 		result = @request_payload["gcm_token"].nil?  ? false : result 
-		result = @request_payload["organization"].nil?  ? false : result 
+		# result = @request_payload["organization"].nil?  ? false : result 
 		result = @request_payload["google_auth_token"].nil?  ? false : result 
+
 		if result == false
 			halt 401, "Insufficient arguments"
 			logger.info "User provided Insufficient data for user creation"
@@ -246,13 +255,19 @@ class HuddleApp < Sinatra::Base
 	end
 
 	def verify_google_auth_token(google_auth_token)
-		validator = GoogleIDToken::Validator.new
-		jwt = validator.check(token, GOOGLE_AUTH_ID)
+		cert = OpenSSL::X509::Certificate.new(File.read('cert.pem'))
+		validator = GoogleIDToken::Validator.new#(:x509_cert => cert)
+		binding.pry
+		jwt = validator.check(google_auth_token, GOOGLE_AUTH_ID)
 		if jwt
 			jwt
 		else
   			halt 404, "Illegal User !! go away"
 		end
+		# url = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" + google_auth_token
+		# response = RestClient.get url
+		# binding.pry
+
 	end
 
 	def generate_server_token(username, full_name)

@@ -38,7 +38,7 @@ class User
 	after :save do
 		if not self.team.nil?
 			team = self.team
-			team.user_modified_after = self.updated_at.strftime("%s").to_i
+			# team.user_modified_after = self.updated_at.strftime("%s").to_i
 			team.save
 		end
 		true
@@ -46,7 +46,7 @@ class User
 
 	after :create do
 		if not self.team.nil?
-			self.team.user_modified_after = self.updated_at.strftime("%s").to_i
+			# self.team.user_modified_after = self.updated_at.strftime("%s").to_i
 			self.team.save
 		end
 		true
@@ -58,7 +58,7 @@ class User
 			:email => email,
 			:username => username,
 			:full_name => full_name,
-			:created_at => created_at.strftime("%s").to_i,
+			# :created_at => created_at.strftime("%s").to_i,
 			:updated_at => updated_at.strftime("%s").to_i,
 			:team_id => team.nil? == true ? -1 : team.id,
 			:image_url => image_url,
@@ -66,7 +66,7 @@ class User
 			:tasks  => tasks.map {|task| task.to_hash},
 			:gcm_token => gcm_token,
 			:organization => organization,
-			:session => session.nil? == true ? "" : session.to_hash
+			# :session => session.nil? == true ? "" : session.to_hash
 			
 		}
 	end
@@ -122,8 +122,8 @@ class Team
 			:id => id,
 			:name => name,
 			:image_url => image_url,
-			:created_at => created_at.strftime("%s").to_i,
-			:updated_at => updated_at.strftime("%s").to_i,
+			# :created_at => created_at.strftime("%s").to_i,
+			# :updated_at => updated_at.strftime("%s").to_i,
 			:task_modified_after => task_modified_after,		
 			:user_modified_after => user_modified_after,
 			:members  => members.map {|member| member.to_hash},
@@ -187,7 +187,7 @@ class Task
 	after :save do 
 		if not self.team.nil?
 			team = self.team
-			team.task_modified_after = self.updated_at.strftime("%s").to_i
+			# team.task_modified_after = self.updated_at.strftime("%s").to_i
 			team.save
 		end
 		true
@@ -196,7 +196,7 @@ class Task
 	after :create do 
 		if not self.team.nil?
 			team = self.team
-			team.task_modified_after = self.updated_at.strftime("%s").to_i
+			# team.task_modified_after = self.updated_at.strftime("%s").to_i
 			team.save
 		end
 		true
@@ -211,8 +211,8 @@ class Task
 			:is_open => is_open,
 			:user_id => user.nil? == true ? -1 : user.id,
 			:team_id => team.id,
-			:created_at => created_at.strftime("%s").to_i,
-			:updated_at => updated_at.strftime("%s").to_i,
+			# :created_at => created_at.strftime("%s").to_i,
+			# :updated_at => updated_at.strftime("%s").to_i,
 			:sync_code => sync_code,
 			:complete_on => complete_on,
 			:discuss_task => discuss_task,

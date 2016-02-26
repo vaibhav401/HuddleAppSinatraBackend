@@ -1,4 +1,5 @@
 require './HuddleApp'
+require 'rubygems'
 
 run HuddleApp
 # create  mysql user 
