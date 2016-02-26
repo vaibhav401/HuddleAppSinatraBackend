@@ -263,7 +263,7 @@ class HuddleApp < Sinatra::Base
 	def verify_google_auth_token(google_auth_token)
 		url = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" + google_auth_token
 		response = RestClient.get url
-		if response.code = 200
+		if response.code == 200
 			result = JSON.parse response
 			result
 		else
