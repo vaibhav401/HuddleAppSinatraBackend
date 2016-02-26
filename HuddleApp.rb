@@ -81,7 +81,14 @@ class HuddleApp < Sinatra::Base
 		if user.nil? 
 			logger.info "Creating new User"
 			#  instead update it from auth_result 
-			user = User.from_hash @request_payload
+			# user = User.from_hash @request_payload
+			user = User.new
+			user.email = result["email"]
+			user.username = result["given_name"]
+			user.full_name = result["name"]
+			user.gcm_token = @request_payload["gcm_token"]
+			user.organization = (result["email"].split "@" ).last
+			user.is_scrum_master = @request_payload["is_scrum_master"]
 			session = Session.new(:server_token => generate_server_token(user.username, user.email))
 			if not user.save
 				halt 401, "Insufficient arguments for user creation"
@@ -255,19 +262,14 @@ class HuddleApp < Sinatra::Base
 	end
 
 	def verify_google_auth_token(google_auth_token)
-		cert = OpenSSL::X509::Certificate.new(File.read('cert.pem'))
-		validator = GoogleIDToken::Validator.new#(:x509_cert => cert)
-		binding.pry
-		jwt = validator.check(google_auth_token, GOOGLE_AUTH_ID)
-		if jwt
-			jwt
+		url = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" + google_auth_token
+		response = RestClient.get url
+		if response.code = 200
+			result = JSON.parse response
+			result
 		else
-  			halt 404, "Illegal User !! go away"
+			halt 404, "Server auth failed"
 		end
-		# url = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" + google_auth_token
-		# response = RestClient.get url
-		# binding.pry
-
 	end
 
 	def generate_server_token(username, full_name)
