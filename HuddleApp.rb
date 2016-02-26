@@ -14,7 +14,7 @@ class HuddleApp < Sinatra::Base
 	configure :production, :development do
      enable :logging
    end
-   set :port, 9000
+   set :port, 8000
    set :bind, '0.0.0.0'
 
     before '/*' do 
