@@ -1,8 +1,7 @@
 require 'sinatra'
 require "sinatra/json"
 require "json" # to parse json data 
-# require 'rest-client'
-require 'google-id-token'
+require 'rest-client'
 require 'pry-nav'
 load './Models.rb'
 
@@ -75,9 +74,9 @@ class HuddleApp < Sinatra::Base
 		# https://github.com/google/google-id-token checkout this gem
 		# provide organization to user 
 		verify_user_create_json!
-		auth_result = verify_google_auth_token( @request_payload["google_auth_token"])
+		result = verify_google_auth_token( @request_payload["google_auth_token"])
 		# user auth result to verify details
-		user = User.first(:email => @request_payload["email"]) # check if user with that mail already exists 
+		user = User.first(:email => result["email"]) # check if user with that mail already exists 
 		if user.nil? 
 			logger.info "Creating new User"
 			#  instead update it from auth_result 
