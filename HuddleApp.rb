@@ -31,7 +31,7 @@ class HuddleApp < Sinatra::Base
 	end
 
 	before '/team*' do 
-		token = env["HTTP_HTTP_X_AUTH_TOKEN"]
+		token = env["HTTP_X_AUTH_TOKEN"]
 		if token.nil?
 			halt 404, "Not allowed"
 		end
@@ -46,7 +46,7 @@ class HuddleApp < Sinatra::Base
 	before '/user*' do 
 		logger.info "inside before for /user*"
 		if request.request_method != "POST"
-			token = env["HTTP_HTTP_X_AUTH_TOKEN"]
+			token = env["HTTP_X_AUTH_TOKEN"]
 			if token.nil?
 				halt 404, "Not allowed"
 			end
