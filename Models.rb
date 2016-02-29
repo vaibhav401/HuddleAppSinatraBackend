@@ -63,10 +63,11 @@ class User
 			:team_id => team.nil? == true ? -1 : team.id,
 			:image_url => image_url,
 			:is_scrum_master => is_scrum_master,
-			:tasks  => tasks.map {|task| task.to_hash},
+			:tasks  => tasks.last(50).map {|task| task.to_hash},
 			:gcm_token => gcm_token,
 			:organization => organization,
-			:session => :session.nil? == true ? "" : session.to_hash
+			# send it if and only if current user is logged in user -> :p
+			:session_token => session.nil? ? "" : session.server_token
 			
 		}
 	end
@@ -126,8 +127,10 @@ class Team
 			:updated_at => updated_at.strftime("%s").to_i,
 			:task_modified_after => task_modified_after,		
 			:user_modified_after => user_modified_after,
+			:members_count => members.count,
+			:organization => organization,
 			:members  => members.map {|member| member.to_hash},
-			:tasks  => tasks.first(50).map {|task| task.to_hash},	
+			:tasks  => tasks.map {|task| task.to_hash},	
 		}
 	end
 
@@ -174,7 +177,7 @@ class Task
 
 
 
-	property :complete_on, Integer   # store only data
+	property :complete_on, Integer , :min => 0, :max => 281474976710656  # store only data
 
 	# to check if task is already present check that if servr_id is present or not 
 
@@ -238,7 +241,10 @@ class Task
 		self.sync_code = hash["sync_code"]
 		self.complete_on = hash["complete_on"]
 		self.discuss_task = hash["discuss_task"]
-		self.users_for_discussion += "," + hash["users_for_discussion"]
+		if hash["users_for_discussion"] and self.users_for_discussion.nil?
+			self.users_for_discussion = ""
+		    self.users_for_discussion += "," + hash["users_for_discussion"]
+		end
 	end
 
 end
