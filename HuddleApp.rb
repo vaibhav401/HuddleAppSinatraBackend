@@ -339,7 +339,7 @@ class HuddleApp < Sinatra::Base
 		options = { :data => { :type => type, :message => message } }
 		response = gcm.send(reg_tokens, options)
     end
-    def send_gcm_to_update_db(reg_tokens, message)
+    def send_gcm_to_update_db(reg_tokens)
     	gcm = GCM.new(GOOGLE_GCM_SERVER_ID)
     	options = { :data => { :type => GCM_TYPE_UPDATE_DB, :message =>  "update your db"  } }
 		response = gcm.send(reg_tokens, options)
